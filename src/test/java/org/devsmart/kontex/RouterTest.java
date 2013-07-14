@@ -1,9 +1,12 @@
-package org.devsmart.kontext;
+package org.devsmart.kontex;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.LinkedList;
 
+import org.devsmart.kontex.Context;
+import org.devsmart.kontex.Id;
+import org.devsmart.kontex.Peer;
 import org.junit.Before;
 import org.junit.Test;
 

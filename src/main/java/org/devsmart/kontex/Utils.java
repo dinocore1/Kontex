@@ -1,4 +1,4 @@
-package org.devsmart.kontext;
+package org.devsmart.kontex;
 
 import java.lang.management.ManagementFactory;
 
