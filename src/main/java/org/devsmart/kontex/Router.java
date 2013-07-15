@@ -19,7 +19,7 @@ public class Router {
 	}
 	
 	public void addPeer(Peer peer) {
-		LinkedList<Peer> bucket = getBucket(peer);
+		LinkedList<Peer> bucket = getBucket(peer.mId);
 		
 		Peer existingPeer = findPeer(peer, bucket);
 		if(existingPeer != null) {
@@ -28,13 +28,13 @@ public class Router {
 		
 		if(existingPeer == null && bucket.size() < MAX_BUCKET_SIZE) {
 			peer.mLastSeen = Utils.getUptime();
-			bucket.addLast(existingPeer);
+			bucket.addLast(peer);
 			peer.startMaintance(mContext);
 		}
 	}
 	
 	public void removePeer(Peer peer) {
-		LinkedList<Peer> bucket = getBucket(peer);
+		LinkedList<Peer> bucket = getBucket(peer.mId);
 		bucket.remove(peer);
 		peer.stopMaintance();
 		
@@ -49,13 +49,13 @@ public class Router {
 		return null;
 	}
 	
-	public LinkedList<Peer> getBucket(Peer peer) {
+	public LinkedList<Peer> getBucket(Id id) {
 		LinkedList<Peer> bucket = null;
 		for(int i=0;i<NUM_BITS;i++){
 			int bytenum = i/8;
 			int bitnum = 1 << (7 - i%8);
 			
-			int result = (peer.mId.mIdBytes[bytenum] & bitnum) ^ (mContext.mId.mIdBytes[bytenum] & bitnum);
+			int result = (id.mIdBytes[bytenum] & bitnum) ^ (mContext.mId.mIdBytes[bytenum] & bitnum);
 			if(result > 0){
 				bucket = mTable.get(i);
 				break;
