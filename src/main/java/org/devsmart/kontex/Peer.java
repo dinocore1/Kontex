@@ -42,17 +42,28 @@ public class Peer {
 		}
 	}
 
-	public void startMaintance(Context context) {
-		if(mMaintainceTask != null){
-			mMaintainceTask.cancel(false);
-		}
+	public void startMaintance(final Context context) {
+		stopMaintance();
 		mMaintainceTask = context.mMainThread.scheduleWithFixedDelay(new Runnable() {
 			public void run() {
-				// TODO send ping message
+				
+				context.sendPing(Peer.this);
+				
+				switch(getState()){
+				case Dead:
+					context.mRouter.removePeer(Peer.this);
+					break;
+				}
 				
 			}
 		}, 10, 10, TimeUnit.SECONDS);
 		
+	}
+	
+	public void stopMaintance() {
+		if(mMaintainceTask != null){
+			mMaintainceTask.cancel(false);
+		}
 	}
 
 	@Override

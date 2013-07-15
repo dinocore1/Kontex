@@ -7,8 +7,9 @@ public class Packet {
 
 	public static enum Type {
 		Ping,
+		Pong,
 		GetPeers,
-		RouteTo
+		RouteTo 
 	}
 	
 	public Type mType;
@@ -45,5 +46,23 @@ public class Packet {
 		
 		}
 		return null;
+	}
+	
+	public static Packet createPing(Id from){
+		Packet retval = new Packet();
+		retval.mData = new byte[21];
+		retval.mData[0] = (byte) (0xA0 | (Type.Ping.ordinal()));
+		System.arraycopy(from.mIdBytes, 0, retval.mData, 1, from.mIdBytes.length);
+		
+		return retval;
+	}
+	
+	public static Packet createPong(Id from){
+		Packet retval = new Packet();
+		retval.mData = new byte[21];
+		retval.mData[0] = (byte) (0xA0 | (Type.Pong.ordinal()));
+		System.arraycopy(from.mIdBytes, 0, retval.mData, 1, from.mIdBytes.length);
+		
+		return retval;
 	}
 }

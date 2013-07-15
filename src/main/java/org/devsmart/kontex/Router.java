@@ -21,12 +21,32 @@ public class Router {
 	public void addPeer(Peer peer) {
 		LinkedList<Peer> bucket = getBucket(peer);
 		
-		
-		if(!bucket.contains(peer) && bucket.size() < MAX_BUCKET_SIZE) {
-			bucket.addLast(peer);
-			peer.startMaintance(mContext);
+		Peer existingPeer = findPeer(peer, bucket);
+		if(existingPeer != null) {
+			existingPeer.mLastSeen = Utils.getUptime();
 		}
 		
+		if(existingPeer == null && bucket.size() < MAX_BUCKET_SIZE) {
+			peer.mLastSeen = Utils.getUptime();
+			bucket.addLast(existingPeer);
+			peer.startMaintance(mContext);
+		}
+	}
+	
+	public void removePeer(Peer peer) {
+		LinkedList<Peer> bucket = getBucket(peer);
+		bucket.remove(peer);
+		peer.stopMaintance();
+		
+	}
+	
+	private Peer findPeer(Peer p, LinkedList<Peer> bucket){
+		for(Peer a : bucket){
+			if(a.equals(p)){
+				return a;
+			}
+		}
+		return null;
 	}
 	
 	public LinkedList<Peer> getBucket(Peer peer) {
@@ -43,5 +63,7 @@ public class Router {
 		}
 		return bucket;
 	}
+
+	
 	
 }

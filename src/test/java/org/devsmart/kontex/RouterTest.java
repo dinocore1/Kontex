@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.LinkedList;
 
-import org.devsmart.kontex.Context;
-import org.devsmart.kontex.Id;
-import org.devsmart.kontex.Peer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,7 +12,7 @@ public class RouterTest {
 	Context mContext;
 	
 	@Before
-	public void setupRouter() {
+	public void setupRouter() throws Exception {
 		mContext = Context.createContext();
 		
 	}
