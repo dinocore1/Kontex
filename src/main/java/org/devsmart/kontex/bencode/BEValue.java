@@ -141,11 +141,11 @@ public class BEValue
 	 * succeeds when the BEValue is actually a List, otherwise it will
 	 * throw a InvalidBEncodingException.
 	 */
-	public List getList() throws InvalidBEncodingException
+	public List<BEValue> getList() throws InvalidBEncodingException
 	{
 		try
 		{
-			return (List)value;
+			return (List<BEValue>)value;
 		}
 		catch (ClassCastException cce)
 		{
@@ -186,5 +186,9 @@ public class BEValue
 			valueString = value.toString();
 
 		return "BEValue[" + valueString + "]";
+	}
+
+	public Object getValue() {
+		return value;
 	}
 }

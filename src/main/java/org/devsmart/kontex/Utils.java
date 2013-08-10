@@ -1,6 +1,7 @@
 package org.devsmart.kontex;
 
 import java.lang.management.ManagementFactory;
+import java.util.Random;
 
 public class Utils {
 	
@@ -19,6 +20,12 @@ public class Utils {
 	
 	public static long getUptime() {
 		return ManagementFactory.getRuntimeMXBean().getUptime();
+	}
+	
+	public static Id randomId(Random r) {
+		byte[] data = new byte[Id.NUM_BYTES];
+		r.nextBytes(data);
+		return new Id(data);
 	}
 
 }

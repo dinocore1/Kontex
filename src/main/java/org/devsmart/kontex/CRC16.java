@@ -37,8 +37,7 @@ public class CRC16 {
             0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040,
         };
 	
-	public static int crc(byte[] data, int offset, int length) {
-		int crc = 0x0000;
+	public static int crc(int crc, byte[] data, int offset, int length) {
 		for(int i=0;i<length;i++) {
 			byte b = data[i];
             crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];

@@ -1,17 +1,18 @@
 package org.devsmart.kontex;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class Connection {
 
-	final SortedSet<Peer> mPeers;
+	private final TreeSet<Peer> mPeers;
 
-	public Connection(SortedSet<Peer> peers) {
+	public Connection(Collection<Peer> peers) {
 		if(peers.size() != 2){
 			throw new RuntimeException("a connection must have exactly 2 peers");
 		}
-		mPeers = peers;
+		mPeers = new TreeSet<Peer>(peers);
 	}
 
 	@Override
@@ -28,7 +29,10 @@ public class Connection {
 	
 	@Override
 	public int hashCode(){
-		return mPeers.first().hashCode();
+		int retval = 0;
+		Iterator<Peer> it = mPeers.iterator();
+		retval = it.next().hashCode() ^ it.next().hashCode();
+		return retval;
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package org.devsmart.kontex;
 
+import java.io.ByteArrayInputStream;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 
@@ -22,6 +23,7 @@ public class Packet {
 
 	public static final int TYPE_KEEPALIVE = 0x0;
 	public static final int TYPE_CONNECTION = 0x1;
+	public static final int TYPE_GETPEERS = 0x2;
 
 	protected byte[] mData;
 	protected InetSocketAddress mFromSocketAddress;
@@ -37,8 +39,10 @@ public class Packet {
 		byte[] data = datagram.getData();
 
 		//check the checksum
-		final int checksum = (((int)data[42] << 8) | ((int)data[43] & 0xff)) & 0xffff;
-		if(checksum != CRC16.crc(data, 0, 42)){
+		final int packetChecksum = (((int)data[42] << 8) | ((int)data[43] & 0xff)) & 0xffff;
+		int calcChecksum = CRC16.crc(0, data, 0, 42);
+		calcChecksum = CRC16.crc(calcChecksum, data, 44, datagram.getLength()-44);
+		if(packetChecksum != calcChecksum){
 			return null;
 		}
 
@@ -66,16 +70,19 @@ public class Packet {
 		mData[41] = (byte) (mData[41] | 0x8);
 	}
 
-	public void serialize() {
-		mFrom.write(mData, 0);
-		mTo.write(mData, 20);
-		int checksum = CRC16.crc(mData, 0, 42);
+	public void writeChecksum() {
+		int checksum = CRC16.crc(0, mData, 0, 42);
+		checksum = CRC16.crc(checksum, mData, 44, mData.length-44);
 		mData[42] = (byte) ((checksum & 0xff00) >> 8);
 		mData[43] = (byte) (checksum & 0xff);
 	}
 
 	public void setType(int type) {
 		mData[40] = (byte) type;
+	}
+	
+	public ByteArrayInputStream getPayload() {
+		return new ByteArrayInputStream(mData, 44, mData.length - 44);
 	}
 	
 }
