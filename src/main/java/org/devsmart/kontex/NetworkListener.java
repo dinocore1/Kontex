@@ -69,6 +69,7 @@ public class NetworkListener {
 	}
 	
 	public void sendPacket(Packet packet, InetSocketAddress address) {
+		packet.serialize();
 		DatagramPacket dgram = new DatagramPacket(packet.mData, packet.mData.length, address.getAddress(), address.getPort());
 		try {
 			mSocket.send(dgram);

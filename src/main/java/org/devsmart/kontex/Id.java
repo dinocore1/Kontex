@@ -37,6 +37,10 @@ public class Id {
 		return new BigInteger(1, resultBytes);
 	}
 	
+	public void write(byte[] buffer, int offset){
+		System.arraycopy(mIdBytes, 0, buffer, offset, NUM_BYTES);
+	}
+	
 	@Override
 	public String toString() {
 		return "["+Utils.bytesToHex(mIdBytes) + "]";

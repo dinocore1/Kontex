@@ -21,9 +21,10 @@ public class Context {
 	}
 	
 	public static void initialize(Context context, int port, Id id) throws SocketException {
+		context.mId = id;
+		
 		context.mRouter = new Router();
 		context.mRouter.mContext = context;
-		context.mId = id;
 		
 		context.mNetwork = new NetworkListener();
 		context.mNetwork.mContext = context;
@@ -42,17 +43,23 @@ public class Context {
 
 			public void run() {
 				
-				Peer fromPeer = new Peer(packet.mFromSocketAddress, packet.mFromId);
-				
-				switch(packet.mType){
-				case Ping:
-					mRouter.addPeer(fromPeer);
-					sendPong(fromPeer);
-					break;
+				if(packet.mTo.equals(mId)){
+					//the incoming packet is addressed to this node
 					
-				case Pong:
-					mRouter.addPeer(fromPeer);
-					break;
+					Peer peer = new Peer(packet.mFromSocketAddress, packet.mFrom);
+					mRouter.addPeer(peer);
+					
+					switch(packet.getPacketType()){
+					case Packet.TYPE_KEEPALIVE:
+						if(!packet.isAck()){
+							Packet pong = PacketFactory.createPongPacket(mId, packet.mFrom);
+							sendPacket(pong, packet.mFromSocketAddress);
+						}
+						break;
+					}
+					
+					
+					
 				}
 				
 			}
@@ -60,14 +67,10 @@ public class Context {
 		});
 	}
 	
-	void sendPing(Peer peer) {
-		Packet packet = Packet.createPing(mId);
-		mNetwork.sendPacket(packet, peer.mAddress);
+	public void sendPacket(Packet p, InetSocketAddress address){
+		mNetwork.sendPacket(p, address);
 	}
 	
-	void sendPong(Peer peer) {
-		Packet packet = Packet.createPong(mId);
-		mNetwork.sendPacket(packet, peer.mAddress);
-	}
+	
 	
 }

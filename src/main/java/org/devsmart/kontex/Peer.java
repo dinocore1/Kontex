@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Peer {
-	
+
 	public final int DIEING_TIMEOUT = 30 * 1000;
 	public final int DEAD_TIMEOUT = DIEING_TIMEOUT * 2;
 
@@ -14,17 +14,17 @@ public class Peer {
 		Dieing,
 		Dead
 	};
-	
+
 	protected InetSocketAddress mAddress;
 	protected Id mId;
 	protected long mLastSeen;
-	
+
 	private ScheduledFuture<?> mMaintainceTask;
-	
+
 	public Peer() {
-		
+
 	}
-	
+
 	public Peer(InetSocketAddress address, Id id) {
 		mAddress = address;
 		mId = id;
@@ -46,20 +46,23 @@ public class Peer {
 		stopMaintance();
 		mMaintainceTask = context.mMainThread.scheduleWithFixedDelay(new Runnable() {
 			public void run() {
-				
-				context.sendPing(Peer.this);
-				
+
 				switch(getState()){
 				case Dead:
 					context.mRouter.removePeer(Peer.this);
 					break;
+
+				default:
+					Packet pingPacket = PacketFactory.createPingPacket(context.mId, mId);
+					context.sendPacket(pingPacket, mAddress);
+					break;
 				}
-				
+
 			}
 		}, 10, 10, TimeUnit.SECONDS);
-		
+
 	}
-	
+
 	public void stopMaintance() {
 		if(mMaintainceTask != null){
 			mMaintainceTask.cancel(false);
@@ -88,7 +91,7 @@ public class Peer {
 	public String toString() {
 		return mAddress.toString() + ":" + mId.toString().substring(0, 4);
 	}
-	
-	
-	
+
+
+
 }

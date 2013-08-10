@@ -1,14 +1,14 @@
 package org.devsmart.kontex;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import java.net.InetSocketAddress;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import static org.mockito.Mockito.*;
 
 public class PingTest {
 
@@ -47,8 +47,11 @@ public class PingTest {
 		}).when(context1).onReciveDatagram(any(Packet.class));
 		*/
 		
-		Peer peer = new Peer(new InetSocketAddress(9001), new Id());
-		context1.sendPing(peer);
+		Peer peer = new Peer(new InetSocketAddress("localhost", 9001), new Id());
+		
+		context1.sendPacket(
+				PacketFactory.createPingPacket(context1.mId, peer.mId),
+				peer.mAddress);
 		
 		Thread.sleep(3000);
 		
