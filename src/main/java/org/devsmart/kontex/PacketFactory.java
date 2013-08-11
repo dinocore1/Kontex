@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.devsmart.kontex.bencode.BEValue;
 import org.devsmart.kontex.bencode.BEncoder;
 
 public class PacketFactory {

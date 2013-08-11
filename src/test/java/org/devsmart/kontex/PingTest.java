@@ -55,11 +55,11 @@ public class PingTest {
 		
 		Thread.sleep(3000);
 		
-		Peer otherPeer = context1.mRouter.getBucket(context2.mId).getFirst();
+		Peer otherPeer = context1.mPeerTable.getBucket(context2.mId).getFirst();
 		Assert.assertNotNull(otherPeer);
 		Assert.assertTrue(otherPeer.equals(context2.mId));
 		
-		otherPeer = context2.mRouter.getBucket(context1.mId).getFirst();
+		otherPeer = context2.mPeerTable.getBucket(context1.mId).getFirst();
 		Assert.assertNotNull(otherPeer);
 		Assert.assertTrue(otherPeer.equals(context1.mId));
 		

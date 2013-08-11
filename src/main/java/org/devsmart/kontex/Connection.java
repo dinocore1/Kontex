@@ -5,8 +5,15 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 public class Connection {
+	
+	public static enum State {
+		Closed,
+		HalfOpen,
+		Open
+	}
 
 	private final TreeSet<Peer> mPeers;
+	State mState = State.Closed;
 
 	public Connection(Collection<Peer> peers) {
 		if(peers.size() != 2){

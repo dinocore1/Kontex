@@ -2,7 +2,6 @@ package org.devsmart.kontex;
 
 import static org.mockito.Mockito.spy;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.Random;
@@ -42,7 +41,7 @@ public class GetPeersTest {
 		for(int i=0;i<10;i++){
 			InetSocketAddress address = new InetSocketAddress("192.168.0."+(1+i), 2000+i);
 			p = new Peer(address, Utils.randomId(r));
-			context2.mRouter.addPeer(p);
+			context2.mPeerTable.addPeer(p);
 		}
 		
 		context1.sendPacket(
@@ -51,7 +50,7 @@ public class GetPeersTest {
 		
 		Thread.sleep(3000);
 		
-		LinkedList<Peer> peers = context1.mRouter.getBucket(p.mId);
+		LinkedList<Peer> peers = context1.mPeerTable.getBucket(p.mId);
 		Assert.assertTrue(!peers.isEmpty());
 		Assert.assertTrue(peers.contains(p));
 		

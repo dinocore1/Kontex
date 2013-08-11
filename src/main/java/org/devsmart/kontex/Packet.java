@@ -85,4 +85,12 @@ public class Packet {
 		return new ByteArrayInputStream(mData, 44, mData.length - 44);
 	}
 	
+	private Peer mFromPeer;
+	public Peer getFromPeer() {
+		if(mFromPeer == null){
+			mFromPeer = new Peer(mFromSocketAddress, mFrom);
+		}
+		return mFromPeer;
+	}
+	
 }

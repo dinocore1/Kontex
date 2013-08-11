@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.Executors;
@@ -32,21 +33,27 @@ public class Context {
 	public static void initialize(Context context, int port, Id id) throws SocketException {
 		context.mId = id;
 
-		context.mRouter = new Router();
-		context.mRouter.mContext = context;
+		context.mPeerTable = new PeerTable(id);
 
 		context.mNetwork = new NetworkListener();
 		context.mNetwork.mContext = context;
-
 		context.mNetwork.start(new InetSocketAddress(port));
+
+		context.mConnectionManager = new ConnectionManager();
+		context.mConnectionManager.mContext = context;
+		
+		context.mPeerListeners.add(context.new PeerMaintanceListener());
 	}
 
 	public static final Logger sLogger = Logger.getLogger("Context");
+	final static int MAX_BUCKET_SIZE = 10;
 
 	public ScheduledExecutorService mMainThread = Executors.newSingleThreadScheduledExecutor();
 	public Id mId;
-	public Router mRouter;
+	public PeerTable mPeerTable;
 	public NetworkListener mNetwork;
+	public ConnectionManager mConnectionManager;
+	private HashSet<PeerListener> mPeerListeners = new HashSet<PeerListener>();
 
 
 	public void onReciveDatagram(final Packet packet) {
@@ -56,9 +63,15 @@ public class Context {
 
 				if(packet.mTo.equals(mId)){
 					//the incoming packet is addressed to this node
-
-					Peer peer = new Peer(packet.mFromSocketAddress, packet.mFrom);
-					mRouter.addPeer(peer);
+					
+					Peer peer = packet.getFromPeer();
+					Peer existingPeer = PeerTable.findPeer(peer, mPeerTable.getBucket(peer.mId));
+					if(existingPeer != null){
+						existingPeer.mLastSeen = Utils.getUptime();
+					} else {
+						peer.mLastSeen = Utils.getUptime();
+						broadcastNewPeerEvent(peer);
+					}
 
 					switch(packet.getPacketType()){
 					case Packet.TYPE_KEEPALIVE:
@@ -91,7 +104,8 @@ public class Context {
 			for(BEValue peervalue : value.getList()){
 				Peer newPeer = new Peer();
 				newPeer.decode(peervalue);
-				mRouter.addPeer(newPeer);
+				newPeer.addVia(packet.getFromPeer());
+				broadcastNewPeerEvent(newPeer);
 			}
 		} catch (IOException e) {
 			sLogger.log(Level.SEVERE, "error decoding getpeers response packet", e);
@@ -103,17 +117,17 @@ public class Context {
 			InputStream input = requestPacket.getPayload();
 			Id targetId = new Id();
 			targetId.read(input);
-			
+
 			LinkedList<Peer> peerList = new LinkedList<Peer>();
-			Iterator<Peer> it = mRouter.getBucket(targetId).iterator();
+			Iterator<Peer> it = mPeerTable.getBucket(targetId).iterator();
 			int i = 0;
 			while(it.hasNext() && i++<8){
 				peerList.add(it.next());
 			}
-			
+
 			Packet responsePacket = PacketFactory.createGetPeersResponsePacket(mId, requestPacket.mFrom, peerList);
 			sendPacket(responsePacket, requestPacket.mFromSocketAddress);
-			
+
 		} catch (IOException e) {
 			sLogger.log(Level.WARNING, "error decoding getpeers request packet", e);
 		}
@@ -123,6 +137,90 @@ public class Context {
 		mNetwork.sendPacket(p, address);
 	}
 
+	protected void addPeerListener(PeerListener listener){
+		synchronized(mPeerListeners){
+			mPeerListeners.add(listener);
+		}
+	}
 
+	protected void removePeerListener(PeerListener listener){
+		synchronized(mPeerListeners){
+			mPeerListeners.remove(listener);
+		}
+	}
+
+	protected void broadcastNewPeerEvent(final Peer peer) {
+		mMainThread.execute(new Runnable(){
+
+			@Override
+			public void run() {
+				synchronized(mPeerListeners){
+					for(PeerListener pl : mPeerListeners){
+						pl.onNewPeer(peer);
+					}
+				}
+			}
+
+		});
+	}
+
+	protected void broadcastDeadPeerEvent(final Peer peer) {
+		mMainThread.execute(new Runnable(){
+
+			@Override
+			public void run() {
+				synchronized(mPeerListeners){
+					for(PeerListener pl : mPeerListeners){
+						pl.onDeadPeer(peer);
+					}
+				}
+			}
+
+		});
+
+	}
+
+	public void broadcastDieingPeerEvent(final Peer peer) {
+		mMainThread.execute(new Runnable(){
+
+			@Override
+			public void run() {
+				synchronized(mPeerListeners){
+					for(PeerListener pl : mPeerListeners){
+						pl.onDieingPeer(peer);
+					}
+				}
+			}
+
+		});
+
+	}
+	
+	private class PeerMaintanceListener implements PeerListener {
+
+		@Override
+		public void onNewPeer(Peer peer) {
+			LinkedList<Peer> bucket = mPeerTable.getBucket(peer.mId);
+			if(bucket.size() < MAX_BUCKET_SIZE){
+				bucket.addLast(peer);
+				peer.startMaintance(Context.this);
+			}
+			
+		}
+
+		@Override
+		public void onDeadPeer(Peer peer) {
+			Context.this.mPeerTable.removePeer(peer);
+			peer.stopMaintance();
+			
+		}
+
+		@Override
+		public void onDieingPeer(Peer peer) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
 
 }

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ public class Peer implements Comparable<Peer>, BEncodable{
 	protected InetSocketAddress mAddress;
 	protected Id mId;
 	protected long mLastSeen;
+	protected HashSet<Peer> mVia = new HashSet<Peer>();
 
 	private ScheduledFuture<?> mMaintainceTask;
 
@@ -56,8 +58,12 @@ public class Peer implements Comparable<Peer>, BEncodable{
 			public void run() {
 
 				switch(getState()){
+				case Dieing:
+					context.broadcastDieingPeerEvent(Peer.this);
+					break;
+				
 				case Dead:
-					context.mRouter.removePeer(Peer.this);
+					context.broadcastDeadPeerEvent(Peer.this);
 					break;
 
 				default:
@@ -97,7 +103,7 @@ public class Peer implements Comparable<Peer>, BEncodable{
 
 	@Override
 	public String toString() {
-		return mAddress.toString() + ":" + mId.toString().substring(0, 4);
+		return mId.toString()+"@"+mAddress.toString();
 	}
 
 	public int compareTo(Peer other) {
@@ -129,6 +135,11 @@ public class Peer implements Comparable<Peer>, BEncodable{
 		
 		mAddress = new InetSocketAddress(address, port);
 		mId = id;
+	}
+
+	public void addVia(Peer fromPeer) {
+		mVia.add(fromPeer);
+		
 	}
 
 }

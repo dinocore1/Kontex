@@ -26,34 +26,34 @@ public class RouterTest {
 		
 		
 		idData[0] = (byte) 0x00;
-		LinkedList<Peer> bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(0));
+		LinkedList<Peer> bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(0));
 		
 		idData[0] = (byte) 0x80;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(2));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(2));
 		
 		idData[0] = (byte) 0xA4;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(4));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(4));
 		
 		idData[0] = (byte) 0xAF;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(5));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(5));
 		
 		idData[0] = (byte) 0xAE;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(5));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(5));
 		
 		idData[0] = (byte) 0xA8;
 		idData[1] = (byte) 0x80;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(9));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(9));
 		
 		idData[0] = (byte) 0xA8;
 		idData[1] = (byte) 0x40;
-		bucket = mContext.mRouter.getBucket(new Id(idData));
-		assertEquals(bucket, mContext.mRouter.mTable.get(10));
+		bucket = mContext.mPeerTable.getBucket(new Id(idData));
+		assertEquals(bucket, mContext.mPeerTable.mTable.get(10));
 		
 	}
 

@@ -1,6 +1,8 @@
 package org.devsmart.kontex;
 
 import java.lang.management.ManagementFactory;
+import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.Random;
 
 public class Utils {
@@ -26,6 +28,24 @@ public class Utils {
 		byte[] data = new byte[Id.NUM_BYTES];
 		r.nextBytes(data);
 		return new Id(data);
+	}
+	
+	public static class PeerDistanceComparator implements Comparator<Peer> {
+
+		public final Id mTarget;
+		public PeerDistanceComparator(Id target){
+			mTarget = target;
+		}
+		
+		@Override
+		public int compare(Peer a, Peer b) {
+			BigInteger distanceToA = mTarget.distance(a.mId);
+			BigInteger distanceToB = mTarget.distance(b.mId);
+			
+			int retval = distanceToA.compareTo(distanceToB);
+			return retval;
+		}
+		
 	}
 
 }

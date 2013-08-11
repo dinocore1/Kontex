@@ -60,7 +60,7 @@ public class Id implements Comparable<Id>, BEncodable {
 	
 	@Override
 	public String toString() {
-		return "["+Utils.bytesToHex(mIdBytes) + "]";
+		return Utils.bytesToHex(mIdBytes).substring(0, 6) + "...";
 	}
 
 	@Override
