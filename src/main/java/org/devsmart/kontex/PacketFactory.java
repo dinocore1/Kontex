@@ -2,6 +2,7 @@ package org.devsmart.kontex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,25 +13,19 @@ public class PacketFactory {
 	public static Packet createPingPacket(Id from, Id to){
 		Packet retval = new Packet();
 		retval.mData = new byte[44];
-		retval.mFrom = from;
 		from.write(retval.mData, 0);
-		retval.mTo = to;
 		to.write(retval.mData, 20);
 		retval.setType(Packet.TYPE_KEEPALIVE);
-		retval.writeChecksum();
 		return retval;
 	}
 	
 	public static Packet createPongPacket(Id from, Id to) {
 		Packet retval = new Packet();
 		retval.mData = new byte[44];
-		retval.mFrom = from;
 		from.write(retval.mData, 0);
-		retval.mTo = to;
 		to.write(retval.mData, 20);
 		retval.setType(Packet.TYPE_KEEPALIVE);
 		retval.setAck();
-		retval.writeChecksum();
 		return retval;
 	}
 	
@@ -44,10 +39,7 @@ public class PacketFactory {
 		
 		Packet retval = new Packet();
 		retval.mData = output.toByteArray();
-		retval.mFrom = from;
-		retval.mTo = to;
 		retval.setType(Packet.TYPE_GETPEERS);
-		retval.writeChecksum();
 		return retval;
 	}
 
@@ -65,11 +57,26 @@ public class PacketFactory {
 		
 		Packet retval = new Packet();
 		retval.mData = output.toByteArray();
-		retval.mFrom = from;
-		retval.mTo = to;
 		retval.setType(Packet.TYPE_GETPEERS);
 		retval.setAck();
-		retval.writeChecksum();
+		return retval;
+	}
+	
+	public static Packet createConnectPacket(Id from, Id to, InetSocketAddress replyAddress) throws IOException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		from.write(output);
+		to.write(output);
+		output.write(new byte[4]);
+		
+		if(replyAddress != null){
+			BEncoder.bencode(replyAddress.getAddress().getAddress(), output);
+			BEncoder.bencode(replyAddress.getPort(), output);
+			
+		}
+		
+		Packet retval = new Packet();
+		retval.mData = output.toByteArray();
+		retval.setType(Packet.TYPE_CONNECTION);
 		return retval;
 	}
 

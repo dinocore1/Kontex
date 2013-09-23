@@ -4,8 +4,12 @@ import java.lang.management.ManagementFactory;
 import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class Utils {
+	
+	public final static ScheduledExecutorService sIOThreads = Executors.newScheduledThreadPool(1);
 	
 	private final static char[] hexArray = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 	

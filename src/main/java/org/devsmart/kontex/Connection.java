@@ -54,4 +54,9 @@ public class Connection {
 		return retval;
 	}
 
+	public void onRecieveDatagram(Packet packet) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

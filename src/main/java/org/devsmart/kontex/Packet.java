@@ -16,7 +16,7 @@ public class Packet {
 	 *    |                        20 byte Destination      ...               |
 	 *    |   .....                                                           |
 	 *    +----------------+----------------+---------------------------------+
-	 * 40 |   PACKET TYPE  |A 1 2 3 4 5 6 7 |         CHECKSUM                |
+	 * 40 |   PACKET TYPE  |A 1 2 3 4 5 6 7 |         PORT NUM                |
 	 *    |                |C
 	 *    |                |K
 	 */   
@@ -27,8 +27,6 @@ public class Packet {
 
 	protected byte[] mData;
 	protected InetSocketAddress mFromSocketAddress;
-	protected Id mFrom;
-	protected Id mTo;
 
 	public static Packet parseDatagram(DatagramPacket datagram) {
 		int length = datagram.getLength();
@@ -36,24 +34,28 @@ public class Packet {
 			return null;
 		}
 
-		byte[] data = datagram.getData();
-
-		//check the checksum
-		final int packetChecksum = (((int)data[42] << 8) | ((int)data[43] & 0xff)) & 0xffff;
-		int calcChecksum = CRC16.crc(0, data, 0, 42);
-		calcChecksum = CRC16.crc(calcChecksum, data, 44, datagram.getLength()-44);
-		if(packetChecksum != calcChecksum){
-			return null;
-		}
-
 		Packet retval = new Packet();
-		retval.mFrom = new Id(data, 0);
-		retval.mTo = new Id(data, 20);
 		retval.mFromSocketAddress = new InetSocketAddress(datagram.getAddress(), datagram.getPort());
 		retval.mData = new byte[datagram.getLength()];
 		System.arraycopy(datagram.getData(), datagram.getOffset(), retval.mData, 0, datagram.getLength());
 
 		return retval;
+	}
+	
+	private Id mFrom;
+	public Id getFrom() {
+		if(mFrom == null){
+			mFrom = new Id(mData, 0);
+		}
+		return mFrom;
+	}
+	
+	private Id mTo;
+	public Id getTo() {
+		if(mTo == null){
+			mTo = new Id(mData, 20);
+		}
+		return mTo;
 	}
 	
 	public int getPacketType() {
@@ -70,15 +72,21 @@ public class Packet {
 		mData[41] = (byte) (mData[41] | 0x8);
 	}
 
-	public void writeChecksum() {
-		int checksum = CRC16.crc(0, mData, 0, 42);
-		checksum = CRC16.crc(checksum, mData, 44, mData.length-44);
-		mData[42] = (byte) ((checksum & 0xff00) >> 8);
-		mData[43] = (byte) (checksum & 0xff);
-	}
-
 	public void setType(int type) {
 		mData[40] = (byte) type;
+	}
+	
+	public void setPort(int port) {
+		mData[42] = (byte) ((port & 0xFF00) >> 8);
+		mData[43] = (byte) (port & 0xFF);
+	}
+	
+	public int getPort() {
+		int port = 0;
+		port = mData[42] << 8;
+		port |= (mData[43] & 0xFF);
+		port &= 0xFFFF;
+		return port;
 	}
 	
 	public ByteArrayInputStream getPayload() {
@@ -88,7 +96,7 @@ public class Packet {
 	private Peer mFromPeer;
 	public Peer getFromPeer() {
 		if(mFromPeer == null){
-			mFromPeer = new Peer(mFromSocketAddress, mFrom);
+			mFromPeer = new Peer(mFromSocketAddress, getFrom());
 		}
 		return mFromPeer;
 	}

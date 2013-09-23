@@ -61,7 +61,7 @@ public class Context {
 
 			public void run() {
 
-				if(packet.mTo.equals(mId)){
+				if(packet.getTo().equals(mId)){
 					//the incoming packet is addressed to this node
 					
 					Peer peer = packet.getFromPeer();
@@ -76,7 +76,7 @@ public class Context {
 					switch(packet.getPacketType()){
 					case Packet.TYPE_KEEPALIVE:
 						if(!packet.isAck()){
-							Packet pong = PacketFactory.createPongPacket(mId, packet.mFrom);
+							Packet pong = PacketFactory.createPongPacket(mId, packet.getFrom());
 							sendPacket(pong, packet.mFromSocketAddress);
 						}
 						break;
@@ -87,6 +87,10 @@ public class Context {
 						} else {
 							sendGetPeersResponse(packet);
 						}
+						break;
+						
+					case Packet.TYPE_CONNECTION:
+						mConnectionManager.onReciveDatagram(packet);
 						break;
 					}
 
@@ -125,7 +129,7 @@ public class Context {
 				peerList.add(it.next());
 			}
 
-			Packet responsePacket = PacketFactory.createGetPeersResponsePacket(mId, requestPacket.mFrom, peerList);
+			Packet responsePacket = PacketFactory.createGetPeersResponsePacket(mId, requestPacket.getFrom(), peerList);
 			sendPacket(responsePacket, requestPacket.mFromSocketAddress);
 
 		} catch (IOException e) {
